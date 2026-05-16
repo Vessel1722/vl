@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vessel Games | Entretenimiento Premium</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900&display=swap');
+
+        :root {
+            --primary: #8a2be2; 
+            --bg-color: #07070a;
+            --card-bg: #12121a;
+            --text-light: #ffffff;
+            --text-dim: #a0a0b0;
+            --accent: #00ffcc; 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(7, 7, 10, 0.85);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+        .logo span {
+            color: var(--primary);
+        }
+        .menu {
+            display: flex;
+            gap: 20px;
+        }
+        .menu a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .menu a:hover {
+            color: var(--primary);
+        }
+
+        /* --- SECCIÓN HERO --- */
+        .hero {
+            background-image: linear-gradient(to right, rgba(7,7,10,1) 10%, rgba(7,7,10,0.4) 50%, rgba(7,7,10,1) 90%), 
+                              url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10%;
+        }
+        .hero-content {
+            max-width: 600px;
+        }
+        .badge {
+            background: rgba(138, 43, 226, 0.2);
+            color: #d4a5ff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid var(--primary);
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .hero h1 span {
+            color: var(--primary);
+        }
+        .hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background-color: transparent;
+            color: white;
+            padding: 12px 25px;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: var(--primary);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+        }
+
+        /* --- SECCIONES DE CONTENIDO --- */
+        .section-title {
+            text-align: center;
+            margin: 60px 0 30px 0;
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding-top: 40px;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary);
+            margin: 10px auto 0 auto;
+        }
+        .gaming-title::after {
+            background-color: var(--accent);
+        }
+
+        .services-section {
+            padding: 0 5%;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .service-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.25);
+            border-color: var(--primary);
+        }
+        .gaming-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 255, 204, 0.2);
+            border-color: var(--accent);
+        }
+        .img-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background-color: #1a1a26;
+            overflow: hidden;
+        }
+        .service-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+        .service-card:hover .service-img {
+            opacity: 1;
+        }
+        .service-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .service-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .options-list {
+            list-style: none;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .options-list li {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+            padding: 2px 0;
+        }
+        .price-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .price-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .price {
+            font-weight: 900;
+            color: #ffffff;
+            font-size: 1.3rem;
+        }
+        .gaming-card .price {
+            color: var(--accent);
+        }
+
+        /* --- SECCIÓN RECOMENDACIONES --- */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .testimonial-card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        .stars {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+        .testimonial-card p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .customer-name {
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .review-action {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Responsivo Celulares */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            nav { padding: 15px 20px; }
+            .menu { display: none; }
+            .services-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .img-container { height: 130px; }
+            .service-info { padding: 12px; }
+            .service-info h3 { font-size: 0.95rem; }
+            .options-list { display: none; }
+            .price { font-size: 1.1rem; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">VESSEL<span>GAMES</span></div>
+        <div class="menu">
+            <a href="#perfiles">Perfiles</a>
+            <a href="#cuentas">Cuentas</a>
+            <a href="#edicion">Edición</a>
+            <a href="#gaming">Gaming</a>
+            <a href="#recomendaciones">Reseñas</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <div class="badge">• VESSEL GAMES OFICIAL</div>
+            <h1>TU MUNDO DE <span>ENTRETENIMIENTO</span></h1>
+            <p>Consigue tus perfiles de streaming, licencias y monedas de juego al costo más bajo y con entrega inmediata.</p>
+            <a href="#gaming" class="btn">🛒 Ver Catálogo</a>
+        </div>
+    </div>
+
+    <h2 id="gaming" class="section-title gaming-title">Gaming & Monedas</h2>
+    <div class="services-section">
+        <div class="services-grid">
+            
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20gustaría%20cotizar%20diamantes%20de%20Free%20Fire%20por%20ID" class="service-card gaming-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1599839619722-39751411ea63?w=800&q=80" alt="Free Fire Diamantes" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Diamantes Free Fire</h3>
+                    <ul class="options-list">
+                        <li><span>Recarga Vía ID</span> <span>100% Seguro</span></li>
+                        <li><span>Cualquier cantidad</span> <span>Disponible</span></li>
+                    </ul>
+                    <div class="price-container">
+                        <span class="price-label">Precio</span>
+                        <div class="price">Cotizar</div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20gustaría%20cotizar%20un%20juego%20de%20Xbox" class="service-card gaming-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=800&q=80" alt="Xbox" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Juegos de Xbox</h3>
+                    <ul class="options-list">
+                        <li><span>Cualquier título digital</span> <span>Sujeto a región</span></li>
+                    </ul>
+                    <div class="price-container">
+                        <span class="price-label">Precio</span>
+                        <div class="price">Cotizar</div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20comprar%202400%20Codpoints%20por%20$195" class="service-card gaming-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1605901309584-818e25960b8f?w=800&q=80" alt="Call of Duty" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>2400 Codpoints</h3>
+                    <ul class="options-list">
+                        <li><span>Call of Duty</span> <span>Entrega directa</span></li>
+                    </ul>
+                    <div class="price-container">
+                        <span class="price-label">Precio</span>
+                        <div class="price">$195 MXN</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h2 id="perfiles" class="section-title">Pases por Perfil</h2>
+    <div class="services-section">
+        <div class="services-grid">
+            
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20un%20perfil%20de%20Netflix" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800&q=80" alt="Netflix" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Netflix</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$90</span></li>
+                        <li><span>2 Meses</span> <span>$170</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$90 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20un%20perfil%20de%20Prime%20Video" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1586899028174-e7098604235b?w=800&q=80" alt="Prime Video" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Prime Video</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>2 Meses</span> <span>$80</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20un%20perfil%20de%20Max" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1616469829581-73993eb86b02?w=800&q=80" alt="MAX" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>MAX</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>3 Meses</span> <span>$125</span></li>
+                        <li><span>6 Meses</span> <span>$240</span></li>
+                        <li><span>12 Meses</span> <span>$450</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20un%20perfil%20de%20Disney" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=800&q=80" alt="Disney" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Disney+</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>3 Meses</span> <span>$135</span></li>
+                        <li><span>6 Meses</span> <span>$260</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Crunchyroll%20por%20Perfil" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80" alt="Crunchyroll" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Crunchyroll Fijo</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$60</span></li>
+                        <li><span>3 Meses</span> <span>$150</span></li>
+                        <li><span>6 Meses</span> <span>$275</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$60 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Crunchyroll%20Renovable" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&q=80" alt="Crunchyroll Renovable" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Crunchyroll Renovable</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$75</span></li>
+                        <li><span>3 Meses</span> <span>$170</span></li>
+                        <li><span>6 Meses</span> <span>$315</span></li>
+                        <li><span>12 Meses</span> <span>$590</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$75 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Viki%20Rakuten%20Perfil" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1580477659142-b0241db8fb1f?w=800&q=80" alt="Viki Rakuten" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Viki Rakuten</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>3 Meses</span> <span>$90</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Paramount" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1440407876336-62333a6f010f?w=800&q=80" alt="Paramount" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Paramount</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>3 Meses</span> <span>$115</span></li>
+                        <li><span>6 Meses</span> <span>$200</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Vix+" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1518672520633-8fc6b567b5e4?w=800&q=80" alt="VIX+" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>VIX+</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$50</span></li>
+                        <li><span>3 Meses</span> <span>$115</span></li>
+                        <li><span>6 Meses</span> <span>$200</span></li>
+                        <li><span>12 Meses</span> <span>$350</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$50 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20NBA" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=800&q=80" alt="NBA" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>NBA Pass</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$40</span></li>
+                        <li><span>2 Meses</span> <span>$70</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$40 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Gaia" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80" alt="Gaia" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Gaia</h3>
+                    <ul class="options-list">
+                        <li><span>3 Meses</span> <span>$85</span></li>
+                        <li><span>6 Meses</span> <span>$140</span></li>
+                        <li><span>12 Meses</span> <span>$235</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$35 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Pornhub" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1510832198440-a52376950479?w=800&q=80" alt="Pornhub" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Porn-Hub</h3>
+                    <ul class="options-list">
+                        <li><span>4 Meses</span> <span>$70</span></li>
+                        <li><span>8 Meses</span> <span>$100</span></li>
+                        <li><span>12 Meses</span> <span>$120</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$70 MXN</div></div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <h2 id="cuentas" class="section-title">Cuentas Completas & Renovaciones</h2>
+    <div class="services-section">
+        <div class="services-grid">
+            
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20cuenta%20nueva%20de%20Netflix%20por%20$245" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=800&q=80" alt="Netflix Nueva" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Netflix (Cuenta Nueva)</h3>
+                    <div class="price-container"><span class="price-label">Completa</span><div class="price">$245 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20cuenta%20nueva%20de%20Vix%20por%20$90" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1518672520633-8fc6b567b5e4?w=800&q=80" alt="VIX Nueva" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>VIX (Cuenta Nueva)</h3>
+                    <div class="price-container"><span class="price-label">Completa</span><div class="price">$90 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20cuenta%20nueva%20de%20Disney%20con%20ESPN%20por%20$170" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=800&q=80" alt="Disney ESPN" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Disney + ESPN (Nueva)</h3>
+                    <div class="price-container"><span class="price-label">Completa</span><div class="price">$170 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20cuenta%20nueva%20de%20Max%20Platino%20por%20$100" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1616469829581-73993eb86b02?w=800&q=80" alt="Max Platino" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>MAX Platino (Nueva)</h3>
+                    <div class="price-container"><span class="price-label">Completa</span><div class="price">$100 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20cuenta%20nueva%20de%20Universal+%20por%20$100" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&q=80" alt="Universal" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Universal+ (Completa)</h3>
+                    <div class="price-container"><span class="price-label">Completa</span><div class="price">$100 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20quiero%20renovación/cuenta%20de%20Crunchyroll" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80" alt="Crunchyroll Renovacion" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Crunchyroll (Renovación)</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes</span> <span>$130</span></li>
+                        <li><span>12 Meses</span> <span>$1120</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$130 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20YouTube%20Premium" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80" alt="YouTube" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>YouTube Premium</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes Invitación</span> <span>$65</span></li>
+                        <li><span>3 Meses Cuenta Nueva</span> <span>$160</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$65 MXN</div></div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <h2 id="edicion" class="section-title">Edición, Trabajo & Más</h2>
+    <div class="services-section">
+        <div class="services-grid">
+            
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Canva%20Pro" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80" alt="Canva Pro" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Canva Pro (Invitación)</h3>
+                    <ul class="options-list">
+                        <li><span>1 Mes (Promocional)</span> <span>$60</span></li>
+                        <li><span>1 Mes Regular</span> <span>$65</span></li>
+                    </ul>
+                    <div class="price-container"><span class="price-label">Desde</span><div class="price">$60 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20CapCut%20Pro" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80" alt="CapCut" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>CapCut Pro</h3>
+                    <div class="price-container"><span class="price-label">Precio</span><div class="price">$65 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Adobe%20Creative%20Cloud" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80" alt="Adobe" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Adobe Creative Cloud</h3>
+                    <div class="price-container"><span class="price-label">Membresía</span><div class="price">$450 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Duolingo" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80" alt="Duolingo" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Duolingo Plus</h3>
+                    <div class="price-container"><span class="price-label">Precio</span><div class="price">$60 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Express%20VPN" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=800&q=80" alt="Express VPN" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Express VPN</h3>
+                    <div class="price-container"><span class="price-label">Precio</span><div class="price">$65 MXN</div></div>
+                </div>
+            </a>
+
+            <a href="https://wa.me/526611078412?text=Hola,%20me%20interesa%20Elevenlabs%20Creator" class="service-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1589254065878-42c9da997008?w=800&q=80" alt="Elevenlabs" class="service-img">
+                </div>
+                <div class="service-info">
+                    <h3>Elevenlabs Creator</h3>
+                    <div class="price-container"><span class="price-label">1 Mes</span><div class="price">$225 MXN</div></div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <h2 id="recomendaciones" class="section-title">Recomendaciones</h2>
+    <div class="services-section">
+        <div class="testimonials-grid">
+            
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"Entrega súper rápida. Compré una cuenta de Netflix y me pasaron los accesos al instante. 100% recomendados."</p>
+                <div class="customer-name">- Alejandro G.</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"Los mejores precios para diamantes y Codpoints. Siempre compro mis recargas aquí y nunca fallan, trato excelente."</p>
+                <div class="customer-name">- Roberto M.</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"Atención de primera. Tuve una duda con mi cuenta de Max, mandé mensaje y me resolvieron súper rápido."</p>
+                <div class="customer-name">- Sofía R.</div>
+            </div>
+
+        </div>
+
+        <div class="review-action">
+            <a href="https://wa.me/526611078412?text=Hola,%20paso%20a%20dejar%20mi%20recomendación%20sobre%20el%20servicio:%20" class="btn">⭐ Dejar mi reseña</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Vessel Games. Al hacer clic en cualquier servicio serás redirigido para acordar tu pago mediante Criptomonedas (LTC/USDT) o transferencia.</p>
+    </footer>
+
+</body>
+</html>
