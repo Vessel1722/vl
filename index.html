@@ -3,353 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T-Rex Extremo: Caos y Destrucción</title>
+    <title>T-Rex: Sistema de Récords</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #111;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: 'Courier New', Courier, monospace;
-            color: #00FF00;
+            margin: 0; padding: 0; background-color: #050505;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; font-family: 'Courier New', Courier, monospace; color: #00ffcc;
         }
-        h1 {
-            margin-bottom: 5px;
-            text-shadow: 2px 2px #FF0000;
-        }
+        h1 { margin-bottom: 5px; text-shadow: 0 0 10px #00ffcc; }
+        
         #game-container {
-            position: relative;
+            position: relative; /* Contenedor para alinear la interfaz sobre el canvas */
+            width: 800px; 
+            height: 400px;
         }
+
         canvas {
-            background-color: #222;
-            border: 5px solid #444;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            background: linear-gradient(to bottom, #112233 0%, #0a0f14 100%);
+            border: 4px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+            image-rendering: pixelated;
+            position: absolute;
+            top: 0; left: 0;
         }
-        .controls {
-            margin-top: 15px;
-            background: #000;
-            padding: 10px 20px;
-            border: 1px solid #00FF00;
+
+        /* Interfaz de Game Over y Récords */
+        #gameOverUI {
+            display: none; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); 
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; border: 4px solid transparent;
         }
+        #gameOverUI h2 { color: #ff0000; font-size: 36px; margin-bottom: 5px; text-shadow: 2px 2px #000; }
+        #gameOverUI h3 { color: #ffaa00; margin-top: 0; }
+        
+        #leaderboardList {
+            list-style: none; padding: 0; margin: 10px 0; font-size: 20px; width: 250px;
+        }
+        #leaderboardList li { display: flex; justify-content: space-between; margin: 5px 0; border-bottom: 1px dashed #333; }
+
+        #recordInputSection { margin: 15px 0; text-align: center; background: rgba(255, 170, 0, 0.1); padding: 15px; border: 1px solid #ffaa00; border-radius: 5px; }
+        #playerName { background: #111; color: #00ffcc; border: 1px solid #00ffcc; padding: 5px; font-family: inherit; font-size: 20px; width: 70px; text-align: center; text-transform: uppercase; }
+        #saveBtn { background: #00ffcc; color: #000; border: none; padding: 7px 15px; font-family: inherit; font-size: 18px; cursor: pointer; margin-left: 10px; font-weight: bold; text-transform: uppercase; }
+        #saveBtn:hover { background: #ffffff; }
+
+        .controls { margin-top: 15px; background: #111; padding: 10px; border: 1px solid #00ffcc; text-align: center;}
     </style>
 </head>
 <body>
 
-    <h1>T-REX EXTREMO</h1>
+    <h1>T-REX: PROTOCOLO SCORE</h1>
+    
     <div id="game-container">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div id="gameOverUI">
+            <h2>EXTINCIÓN INMINENTE</h2>
+            <h3>--- MEJORES PUNTAJES ---</h3>
+            <ul id="leaderboardList"></ul>
+            
+            <div id="recordInputSection">
+                <p style="color: #ffaa00; margin-top: 0;">¡NUEVO RÉCORD!</p>
+                <input type="text" id="playerName" maxlength="3" placeholder="AAA">
+                <button id="saveBtn">Guardar</button>
+            </div>
+            
+            <p style="color: #fff; margin-top: 20px;">Presiona [R] para reiniciar</p>
+        </div>
     </div>
+
     <div class="controls">
-        <p><b>Controles:</b> [ESPACIO] o [FLECHA ARRIBA] = Saltar | [Tecla X] = Disparar (Si tienes arma)</p>
+        <p><b>[ARRIBA]</b> Saltar | <b>[ABAJO]</b> Agacharse | <b>[X]</b> Disparar</p>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
+        // Elementos del DOM para la UI de Récords
+        const gameOverUI = document.getElementById('gameOverUI');
+        const leaderboardList = document.getElementById('leaderboardList');
+        const recordInputSection = document.getElementById('recordInputSection');
+        const playerNameInput = document.getElementById('playerName');
+        const saveBtn = document.getElementById('saveBtn');
 
-        // Variables Globales
-        let frame = 0;
-        let score = 0;
-        let gameOver = false;
-        let shake = 0;
-        let groundY = 350;
+        // Cargar récords guardados en el navegador (o crear una lista por defecto)
+        let highScores = JSON.parse(localStorage.getItem('trexHighScores')) || [
+            {name: 'REX', score: 500},
+            {name: 'CPU', score: 300},
+            {name: 'BOT', score: 150},
+            {name: 'NOB', score: 50},
+            {name: 'SAD', score: 10}
+        ];
 
-        // Entidades
-        let enemies = [];
-        let bullets = [];
-        let particles = [];
-        let powerups = [];
-
-        // Jugador (El Dinosaurio)
-        const player = {
-            x: 50,
-            y: 300,
-            w: 40,
-            h: 50,
-            dy: 0,
-            gravity: 0.8,
-            jumpPower: -15,
-            grounded: true,
-            ammo: 0,
-            color: '#32CD32' // Verde Dino
+        // --- PALETA Y SPRITES ---
+        const colors = {
+            '1': '#1d3a17', '2': '#3e8934', '3': '#ff0000', '4': '#777777', 
+            '5': '#00ffcc', '6': '#8a2be2', '7': '#ff00ff', '8': '#ff5500', '9': '#aa0000'
         };
 
-        // Estado de teclas
-        const keys = { space: false, x: false };
+        const dinoSprite = [ "0000000022222220", "0000000222232222", "0000000222222220", "0000000222222000", "0000000222222200", "2200002222255555", "2220022224440000", "0222222244440000", "0022222444440000", "0002222244400000", "0000222222000000", "0000022022000000", "0000020002000000", "0000220022000000" ];
+        const dinoCrouchSprite = [ "0000000022222220", "0000000222232222", "0000000222222220", "2200000222222000", "2220002222255555", "0222222244440000", "0022222444440000", "0002222244400000", "0000222002200000", "0000220022000000" ];
+        const droneSprite = [ "000006666600000", "000666777666000", "006667777766600", "066667777766660", "066666666666660", "006606666606600", "006000666000600" ];
+        const crawlerSprite = [ "00009990000", "00999999900", "09939993990", "99999999999", "09090009090" ];
+        const tankSprite = [ "0000008888000000", "0000888448880000", "0088844444488800", "0888443443448880", "8888444444448888", "8888888888888888", "0880880000880880", "0880880000880880" ];
 
-        // Efecto de Temblor de Pantalla
-        function applyShake() {
-            if (shake > 0) {
-                const dx = (Math.random() - 0.5) * shake;
-                const dy = (Math.random() - 0.5) * shake;
-                ctx.translate(dx, dy);
-                shake -= 0.5;
+        function drawSprite(x, y, spriteData, scale) {
+            for (let r = 0; r < spriteData.length; r++) {
+                for (let c = 0; c < spriteData[r].length; c++) {
+                    if (spriteData[r][c] !== '0') {
+                        ctx.fillStyle = colors[spriteData[r][c]];
+                        ctx.fillRect(x + (c * scale), y + (r * scale), scale, scale);
+                    }
+                }
             }
         }
 
-        // Creador de Partículas (Sangre/Explosiones)
-        function createExplosion(x, y, color, amount) {
-            for (let i = 0; i < amount; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10,
-                    life: 20 + Math.random() * 20,
-                    color: color,
-                    size: Math.random() * 6 + 2
-                });
+        // --- VARIABLES GLOBALES DEL JUEGO ---
+        let frame = 0, score = 0, gameOver = false, powerLevel = 0, powerMessage = "";
+        const groundY = 320, pixelScale = 4;
+
+        const player = { x: 50, y: 200, w: 16 * pixelScale, h: 14 * pixelScale, dy: 0, gravity: 0.7, jumpPower: -13, grounded: false, crouching: false };
+        const keys = { space: false, x: false, down: false };
+        let lasers = [], enemies = [], particles = [];
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<15; i++) particles.push({ x: x, y: y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 20, color: color, size: Math.random()*4+2 });
+        }
+
+        // --- SISTEMA DE RÉCORDS ---
+        function updateLeaderboardUI() {
+            leaderboardList.innerHTML = '';
+            highScores.forEach((entry, idx) => {
+                let li = document.createElement('li');
+                li.innerHTML = `<span>${idx + 1}. ${entry.name}</span> <span style="color:#fff;">${entry.score} M</span>`;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        function triggerGameOver() {
+            gameOver = true;
+            let finalScore = Math.floor(score);
+            updateLeaderboardUI();
+            gameOverUI.style.display = 'flex'; // Mostrar interfaz HTML
+            
+            // Comprobar si el puntaje entra en el Top 5
+            if (highScores.length < 5 || finalScore > highScores[highScores.length - 1].score) {
+                recordInputSection.style.display = 'block';
+                playerNameInput.value = '';
+                playerNameInput.focus();
+            } else {
+                recordInputSection.style.display = 'none';
             }
         }
 
-        // Lógica Principal de Actualización
+        // Evento para el botón de guardar récord
+        saveBtn.addEventListener('click', () => {
+            let name = playerNameInput.value.trim().substring(0,3).toUpperCase();
+            if(name === "") name = "AAA"; // Nombre por defecto si lo dejan vacío
+            
+            highScores.push({name: name, score: Math.floor(score)});
+            highScores.sort((a, b) => b.score - a.score); // Ordenar de mayor a menor
+            highScores.splice(5); // Mantener solo los mejores 5
+            
+            localStorage.setItem('trexHighScores', JSON.stringify(highScores)); // Guardar en el navegador
+            
+            recordInputSection.style.display = 'none'; // Ocultar input
+            updateLeaderboardUI(); // Refrescar la lista visualmente
+        });
+
+        // --- LÓGICA PRINCIPAL ---
         function update() {
             if (gameOver) return;
             frame++;
-            score += 0.1;
+            let speedMult = 1 + (score / 500); 
+            score += 0.1 * speedMult;
 
-            // Físicas del Jugador
-            player.dy += player.gravity;
-            player.y += player.dy;
-            
-            if (player.y + player.h >= groundY) {
-                player.y = groundY - player.h;
-                player.dy = 0;
-                player.grounded = true;
-            } else {
-                player.grounded = false;
+            // Físicas y Agacharse
+            player.crouching = keys.down;
+            let targetH = player.crouching ? 10 * pixelScale : 14 * pixelScale;
+            if (player.h !== targetH) { player.y += (player.h - targetH); player.h = targetH; }
+
+            player.dy += player.gravity; player.y += player.dy;
+            if (player.y + player.h >= groundY) { player.y = groundY - player.h; player.dy = 0; player.grounded = true; } else { player.grounded = false; }
+            if (keys.space && player.grounded) { player.dy = player.jumpPower; player.grounded = false; }
+
+            // Sistema de Disparo
+            if (score > 300 && powerLevel < 3) { powerLevel = 3; powerMessage = "NIVEL 3: DISPARO MÚLTIPLE!"; } else if (score > 200 && powerLevel < 2) { powerLevel = 2; powerMessage = "NIVEL 2: LÁSER DOBLE!"; } else if (score > 100 && powerLevel < 1) { powerLevel = 1; powerMessage = "NIVEL 1: FUEGO RÁPIDO!"; }
+            if (powerMessage && frame % 100 === 0) powerMessage = "";
+
+            let fireRate = powerLevel >= 1 ? 8 : 15; 
+            if (keys.x && frame % fireRate === 0) {
+                let lx = player.x + (15 * pixelScale), ly = player.y + (player.crouching ? (4 * pixelScale) : (5 * pixelScale));
+                if (powerLevel <= 1) lasers.push({ x: lx, y: ly, vx: 15, vy: 0 });
+                else if (powerLevel === 2) { lasers.push({ x: lx, y: ly-5, vx: 15, vy: 0 }); lasers.push({ x: lx, y: ly+5, vx: 15, vy: 0 }); }
+                else { lasers.push({ x: lx, y: ly, vx: 15, vy: 0 }); lasers.push({ x: lx, y: ly, vx: 14, vy: -3 }); lasers.push({ x: lx, y: ly, vx: 14, vy: 3 }); }
             }
 
-            if (keys.space && player.grounded) {
-                player.dy = player.jumpPower;
-                player.grounded = false;
-                createExplosion(player.x + 20, player.y + 50, '#888', 5); // Polvo al saltar
+            lasers.forEach((l, i) => { l.x += l.vx; l.y += l.vy; if (l.x > canvas.width || l.y < 0 || l.y > canvas.height) lasers.splice(i, 1); });
+
+            // Generar Enemigos
+            if (frame % Math.max(30, 90 - Math.floor(score/10)) === 0) {
+                let type = Math.random();
+                if (type > 0.7) enemies.push({ x: canvas.width, y: groundY - (20*pixelScale), w: 15*pixelScale, h: 7*pixelScale, speed: 6 * speedMult, hp: 1, type: 'drone' });
+                else if (type > 0.3) enemies.push({ x: canvas.width, y: groundY - (5*pixelScale), w: 11*pixelScale, h: 5*pixelScale, speed: 8 * speedMult, hp: 1, type: 'crawler' });
+                else enemies.push({ x: canvas.width, y: groundY - (8*pixelScale), w: 16*pixelScale, h: 8*pixelScale, speed: 4 * speedMult, hp: 2, type: 'tank' });
             }
 
-            // Disparar Ametralladora (Exagerado)
-            if (keys.x && player.ammo > 0 && frame % 4 === 0) {
-                bullets.push({ x: player.x + player.w, y: player.y + 15, speed: 20 });
-                player.ammo--;
-                shake = 5; // Retraso y temblor visual
-                createExplosion(player.x + player.w, player.y + 15, '#FFA500', 3); // Fogonazo
-            }
-
-            // Mover Balas
-            bullets.forEach((b, i) => {
-                b.x += b.speed;
-                if (b.x > canvas.width) bullets.splice(i, 1);
-            });
-
-            // Generador de Enemigos Bizarros
-            if (frame % Math.max(40, 100 - Math.floor(score/10)) === 0) {
-                let r = Math.random();
-                if (r > 0.6) {
-                    // OVNI Volador
-                    enemies.push({ x: 800, y: 150 + Math.random() * 100, w: 60, h: 20, speed: 8 + score/100, hp: 1, type: 'UFO', color: '#8A2BE2' });
-                } else if (r > 0.3) {
-                    // Zombie Mutante
-                    enemies.push({ x: 800, y: groundY - 40, w: 40, h: 40, speed: 9 + score/100, hp: 2, type: 'ZOMBIE', color: '#006400' });
-                } else {
-                    // Cactus (Clásico pero rápido)
-                    enemies.push({ x: 800, y: groundY - 50, w: 30, h: 50, speed: 8 + score/100, hp: 1, type: 'CACTUS', color: '#228B22' });
-                }
-            }
-
-            // Generador de Cajas de Armas
-            if (frame % 300 === 0 && Math.random() > 0.3) {
-                powerups.push({ x: 800, y: 200, w: 30, h: 30, speed: 6 });
-            }
-
-            // Mover y Colisiones Cajas de Armas
-            powerups.forEach((p, i) => {
-                p.x -= p.speed;
-                // Colisión con jugador
-                if (player.x < p.x + p.w && player.x + player.w > p.x && player.y < p.y + p.h && player.y + player.h > p.y) {
-                    player.ammo = 100; // ¡100 balas de locura!
-                    shake = 10;
-                    createExplosion(p.x, p.y, '#FFFF00', 20);
-                    powerups.splice(i, 1);
-                }
-            });
-
-            // Mover y Colisiones de Enemigos
+            // Colisiones
             enemies.forEach((e, i) => {
                 e.x -= e.speed;
-                if (e.type === 'UFO') e.y += Math.sin(frame * 0.1) * 3; // Movimiento ondulante
-
-                // Colisión Jugador vs Enemigo (Game Over)
-                if (player.x < e.x + e.w && player.x + player.w > e.x && player.y < e.y + e.h && player.y + player.h > e.y) {
-                    gameOver = true;
-                    shake = 20;
-                    createExplosion(player.x, player.y, '#FF0000', 50); // Sangre exagerada
+                if (player.x < e.x + e.w - 8 && player.x + player.w > e.x + 8 && player.y < e.y + e.h - 8 && player.y + player.h > e.y + 8) {
+                    triggerGameOver(); // Disparar la pantalla de muerte y récords
                 }
 
-                // Colisión Bala vs Enemigo
-                bullets.forEach((b, j) => {
-                    if (b.x < e.x + e.w && b.x + 10 > e.x && b.y < e.y + e.h && b.y + 4 > e.y) {
-                        e.hp--;
-                        bullets.splice(j, 1);
-                        createExplosion(b.x, b.y, '#FFA500', 5);
-                        
-                        if (e.hp <= 0) {
-                            let color = e.type === 'ZOMBIE' ? '#8B0000' : (e.type === 'UFO' ? '#00FFFF' : '#00FF00');
-                            createExplosion(e.x + e.w/2, e.y + e.h/2, color, 30);
-                            enemies.splice(i, 1);
-                            score += 10;
-                            shake = 3;
-                        }
+                lasers.forEach((l, j) => {
+                    if (l.x < e.x + e.w && l.x + 25 > e.x && l.y < e.y + e.h && l.y + 4 > e.y) {
+                        e.hp--; lasers.splice(j, 1); createExplosion(l.x, l.y, '#00ffcc');
+                        if (e.hp <= 0) { createExplosion(e.x+e.w/2, e.y+e.h/2, e.type==='tank' ? '#ff5500' : (e.type==='crawler' ? '#aa0000' : '#8a2be2')); enemies.splice(i, 1); score += 5; }
                     }
                 });
-
-                if (e.x < -100) enemies.splice(i, 1);
+                if (e.x + e.w < 0) enemies.splice(i, 1);
             });
 
-            // Mover Partículas
-            particles.forEach((p, i) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                if (p.life <= 0) particles.splice(i, 1);
-            });
+            particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if (p.life <= 0) particles.splice(i, 1); });
         }
 
-        // Lógica de Dibujado
+        // --- RENDERIZADO ---
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.save();
-            applyShake(); // Aplicar temblor visual a todo lo que se dibuja abajo
 
             // Suelo
-            ctx.fillStyle = '#555';
-            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-            ctx.strokeStyle = '#00FF00';
-            ctx.beginPath();
-            ctx.moveTo(0, groundY);
-            ctx.lineTo(canvas.width, groundY);
-            ctx.stroke();
+            ctx.fillStyle = '#00ffcc'; ctx.fillRect(0, groundY, canvas.width, 2);
+            ctx.fillStyle = '#050a0f'; ctx.fillRect(0, groundY + 2, canvas.width, canvas.height - groundY);
 
-            // Dibujar Partículas
-            particles.forEach(p => {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
-            });
-
-            // Dibujar Cajas de Armas
-            powerups.forEach(p => {
-                ctx.fillStyle = (frame % 10 < 5) ? '#FFFF00' : '#FF4500'; // Parpadeo
-                ctx.fillRect(p.x, p.y, p.w, p.h);
-                ctx.fillStyle = '#000';
-                ctx.font = '20px Courier New';
-                ctx.fillText('W', p.x + 7, p.y + 22);
-            });
-
-            // Dibujar Enemigos
+            // Dibujar Entidades
             enemies.forEach(e => {
-                ctx.fillStyle = e.color;
-                if (e.type === 'UFO') {
-                    ctx.beginPath();
-                    ctx.ellipse(e.x + e.w/2, e.y + e.h/2, e.w/2, e.h/2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#00FFFF'; // Cúpula OVNI
-                    ctx.beginPath();
-                    ctx.arc(e.x + e.w/2, e.y, 10, Math.PI, 0);
-                    ctx.fill();
-                } else if (e.type === 'ZOMBIE') {
-                    ctx.fillRect(e.x, e.y, e.w, e.h);
-                    ctx.fillStyle = '#FF0000'; // Ojos rojos
-                    ctx.fillRect(e.x + 5, e.y + 10, 8, 8);
-                } else {
-                    ctx.fillRect(e.x, e.y, e.w, e.h); // Cactus
-                }
+                if (e.type === 'drone') drawSprite(e.x, e.y, droneSprite, pixelScale);
+                else if (e.type === 'crawler') drawSprite(e.x, e.y, crawlerSprite, pixelScale);
+                else drawSprite(e.x, e.y, tankSprite, pixelScale);
             });
 
-            // Dibujar Balas
-            ctx.fillStyle = '#FFFF00';
-            bullets.forEach(b => {
-                ctx.fillRect(b.x, b.y, 15, 4);
-            });
+            if (!gameOver) drawSprite(player.x, player.y, player.crouching ? dinoCrouchSprite : dinoSprite, pixelScale);
 
-            // Dibujar Jugador
-            if (!gameOver) {
-                ctx.fillStyle = player.color;
-                ctx.fillRect(player.x, player.y, player.w, player.h);
-                // Ojo de furia
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(player.x + 25, player.y + 10, 5, 5);
-                
-                // Si tiene arma, dibujar una metralleta absurda
-                if (player.ammo > 0) {
-                    ctx.fillStyle = '#888';
-                    ctx.fillRect(player.x + 20, player.y + 20, 30, 10);
-                    ctx.fillStyle = '#333';
-                    ctx.fillRect(player.x + 45, player.y + 18, 5, 14);
-                }
-            }
+            lasers.forEach(l => { ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffcc'; ctx.fillRect(l.x, l.y, 25, 4); ctx.shadowBlur = 0; });
+            particles.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); });
 
-            ctx.restore(); // Fin del temblor visual
-
-            // Interfaz de Usuario (HUD)
-            ctx.fillStyle = '#FFF';
-            ctx.font = '20px Courier New';
-            ctx.fillText(`Puntos: ${Math.floor(score)}`, 20, 30);
-            
-            if (player.ammo > 0) {
-                ctx.fillStyle = '#FFFF00';
-                ctx.fillText(`MUNICIÓN: ${player.ammo}`, 20, 60);
-                if (frame % 20 < 10) ctx.fillText('¡MANTÉN LA "X"!', 20, 90);
-            }
-
-            if (gameOver) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#FF0000';
-                ctx.font = '40px Courier New';
-                ctx.fillText('¡DESTRUIDO!', canvas.width/2 - 120, canvas.height/2 - 20);
-                ctx.fillStyle = '#FFF';
-                ctx.font = '20px Courier New';
-                ctx.fillText('Presiona R para reiniciar', canvas.width/2 - 150, canvas.height/2 + 20);
-            }
+            // Puntos en partida
+            ctx.fillStyle = '#00ffcc'; ctx.font = 'bold 20px Courier New';
+            ctx.fillText(`DISTANCIA: ${Math.floor(score)} M`, 20, 30);
+            if (powerMessage) { ctx.fillStyle = '#ffaa00'; ctx.fillText(powerMessage, canvas.width/2 - 120, 30); }
         }
 
-        // Bucle Principal
-        function loop() {
-            update();
-            draw();
-            requestAnimationFrame(loop);
-        }
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
 
-        // Reiniciar Juego
-        function resetGame() {
-            player.y = 300;
-            player.dy = 0;
-            player.ammo = 0;
-            enemies = [];
-            bullets = [];
-            particles = [];
-            powerups = [];
-            score = 0;
-            frame = 0;
-            gameOver = false;
-            shake = 0;
-        }
-
-        // Controles Event Listeners
+        // --- CONTROLES ---
         window.addEventListener('keydown', e => {
+            // Permitir escribir en el input si estamos en Game Over
+            if (gameOver && document.activeElement === playerNameInput) {
+                if (e.key === 'Enter') saveBtn.click();
+                return;
+            }
+
             if (e.code === 'Space' || e.code === 'ArrowUp') keys.space = true;
+            if (e.code === 'ArrowDown' || e.key.toLowerCase() === 's') keys.down = true;
             if (e.key.toLowerCase() === 'x') keys.x = true;
-            if (e.key.toLowerCase() === 'r' && gameOver) resetGame();
+            
+            // Reiniciar Juego
+            if (e.key.toLowerCase() === 'r' && gameOver && document.activeElement !== playerNameInput) {
+                gameOverUI.style.display = 'none'; // Ocultar interfaz
+                score = 0; frame = 0; powerLevel = 0; enemies = []; lasers = []; particles = []; gameOver = false;
+                player.y = 200; player.dy = 0;
+            }
         });
 
         window.addEventListener('keyup', e => {
             if (e.code === 'Space' || e.code === 'ArrowUp') keys.space = false;
+            if (e.code === 'ArrowDown' || e.key.toLowerCase() === 's') keys.down = false;
             if (e.key.toLowerCase() === 'x') keys.x = false;
         });
 
-        // Iniciar
         loop();
     </script>
 </body>
